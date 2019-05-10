@@ -14,7 +14,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscription = \_ -> Sub.none
+        , subscriptions = \_ -> Sub.none
         }
 
 
@@ -23,7 +23,7 @@ main =
 
 
 type alias Model =
-    { init : String
+    { input : String
     , userStore : UserStore
     }
 
@@ -52,7 +52,7 @@ type Msg
     | Receive (Result Http.Error User)
 
 
-update : Msg -> Modle -> ( Modle, Cnd Msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Input newInput ->
@@ -61,7 +61,7 @@ update msg model =
         Send ->
             ( { model
                 | input = ""
-                , userStore = Nothing
+                , userStore = Waiting
               }
             , Http.get
                 { url = "https://api.github.com/users/" ++ model.input
@@ -137,13 +137,13 @@ type alias User =
     , avatarUrl : String
     , name : String
     , htmlUrl : String
-    , bio : Myebe String
+    , bio : Maybe String
     }
 
 
 userDecoder : Decoder User
 userDecoder =
-    Decoder.map5 User
+    D.map5 User
         (D.field "login" D.string)
         (D.field "avatar_url" D.string)
         (D.field "name" D.string)
